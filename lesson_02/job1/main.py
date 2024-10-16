@@ -29,7 +29,7 @@ def params_validation(data: dict) -> dict:
         valid_msg['msg'] = 'raw_dir must be provided'
         return valid_msg
     else:
-        re_matched = re.search(r'.+raw/sales/\d{4}-\d{2}-\d{2}', data['raw_dir'])
+        re_matched = re.search(fr'{BASE_DIR}/raw/sales/\d{{4}}-\d{{2}}-\d{{2}}', data['raw_dir'])
         if not re_matched:
             valid_msg['error'] = 1
             valid_msg['error_type'] = 'ValueError'
@@ -63,7 +63,7 @@ def get_data(date: str):
     page = 1
     data = []
     message = ''
-    while message == '':
+    while message == '' and page < 10:
         response = requests.get(
             url='https://fake-api-vycpfa6oca-uc.a.run.app/sales',
             params={'date': date, 'page': page},

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask, request
 import json
 import fastavro
-from fastavro.schema import load_schema
+from fastavro import schema
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def params_validation(data: dict) -> dict:
         valid_msg['msg'] = 'raw_dir must be provided'
         return valid_msg
     else:
-        re_matched = re.search(r'.+raw/sales/\d{4}-\d{2}-\d{2}', data['raw_dir'])
+        re_matched = re.search(fr'{BASE_DIR}/raw/sales/\d{{4}}-\d{{2}}-\d{{2}}', data['raw_dir'])
         if not re_matched:
             valid_msg['error'] = 1
             valid_msg['error_type'] = 'ValueError'
@@ -41,7 +41,7 @@ def params_validation(data: dict) -> dict:
         valid_msg['msg'] = 'stg_dir must be provided'
         return valid_msg
     else:
-        re_matched = re.search(r'.+stg/sales/\d{4}-\d{2}-\d{2}', data['stg_dir'])
+        re_matched = re.search(fr'{BASE_DIR}/stg/sales/\d{{4}}-\d{{2}}-\d{{2}}', data['stg_dir'])
         if not re_matched:
             valid_msg['error'] = 1
             valid_msg['error_type'] = 'ValueError'
@@ -60,16 +60,7 @@ def params_validation(data: dict) -> dict:
 
 
 def move_to_stg(raw_dir: str, stg_dir: str):
-    schema = {
-        "type": "record",
-        "name": "AvroSchema",
-        "fields": [
-            {"name": "client", "type": "string"},
-            {"name": "purchase_date", "type": "string"},
-            {"name": "product", "type": "string"},
-            {"name": "price", "type": "int"}
-        ]
-    }
+    avro_schema = schema.load_schema(f'./data_schema.avsc')
     files = os.listdir(raw_dir)
     for file in files:
         with open(os.path.join(raw_dir, file), 'r', encoding='utf-8') as f:
@@ -77,7 +68,7 @@ def move_to_stg(raw_dir: str, stg_dir: str):
 
         clear_directory(stg_dir)
         with open(os.path.join(stg_dir, file.replace('json', 'avro')), 'wb') as avro_file:
-            fastavro.writer(avro_file, schema, data)
+            fastavro.writer(avro_file, avro_schema, data)
 
     return data
 
