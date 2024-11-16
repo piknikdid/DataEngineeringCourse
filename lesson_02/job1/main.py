@@ -3,7 +3,7 @@ import re
 import shutil
 import requests
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, Response
 from datetime import datetime
 import json
 
@@ -99,7 +99,7 @@ def job():
     with open(raw_dir + f'/{date}.json', 'w', encoding='utf') as f:
         json.dump(json_data, f)
 
-    return 'Success'
+    return Response("This is a successful response", status=201)
 
 
 if __name__ == '__main__':
