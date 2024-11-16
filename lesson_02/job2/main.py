@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, Response
 import json
 import fastavro
 from fastavro import schema
@@ -13,6 +13,7 @@ load_dotenv()
 
 AUTH_TOKEN = os.getenv('AUTH_TOKEN')
 BASE_DIR = os.getenv('BASE_DIR')
+AVRO_SCHEMA = os.getenv('AVRO_SCHEMA')
 
 
 def clear_directory(directory_path):
@@ -60,7 +61,7 @@ def params_validation(data: dict) -> dict:
 
 
 def move_to_stg(raw_dir: str, stg_dir: str):
-    avro_schema = schema.load_schema(f'./data_schema.avsc')
+    avro_schema = schema.load_schema(f'{AVRO_SCHEMA}/data_schema.avsc')
     files = os.listdir(raw_dir)
     for file in files:
         with open(os.path.join(raw_dir, file), 'r', encoding='utf-8') as f:
@@ -83,7 +84,7 @@ def job():
     stg_dir = request_data['stg_dir']
     move_to_stg(raw_dir, stg_dir)
 
-    return 'Success'
+    return Response("This is a successful response", status=201)
 
 
 if __name__ == '__main__':
